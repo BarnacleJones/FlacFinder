@@ -16,7 +16,7 @@ try
     while (running)
     {
         Console.WriteLine("Select an option:");
-        Console.WriteLine("1. Search for an artist and check if you have the albums in FLAC");
+        Console.WriteLine("1. Search for an artist and check if you have all albums in FLAC, or print those that are not");
         Console.WriteLine("2. Write potential duplicates to a log file (this will take some time, just wait...)");
         Console.WriteLine("3. Write all folders with only one or two songs to a log file");
         Console.WriteLine("4. Print instructions");

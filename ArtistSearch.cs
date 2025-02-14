@@ -4,8 +4,8 @@ namespace FlacFinder
 {
     public static class ArtistSearch
     {
-        static string Normalize(string input) => Regex.Replace(input, @"[^a-zA-Z0-9]", "", RegexOptions.IgnoreCase);//Normalize a name by removing non-alphanumeric characters
-        static string CreateLoosePattern(string input) => Regex.Replace(input, @"\s+", ".*", RegexOptions.IgnoreCase); // Turns "Run the Jewels" into "Run.*the.*Jewels"
+        static string Normalize(string input) => Regex.Replace(input, @"[^a-zA-Z0-9]", "", RegexOptions.IgnoreCase); // Remove non-alphanumeric characters
+        static string CreateLoosePattern(string input) => Regex.Replace(input, @"\s+", ".*", RegexOptions.IgnoreCase); // "Run the Jewels" -> "Run.*the.*Jewels"
 
         public static void SearchArtist(string artistName)
         {
@@ -15,11 +15,11 @@ namespace FlacFinder
             var possibleMatches = new Dictionary<string, string>();
 
             var normalizedArtist = Normalize(artistName);
-            var loosePattern = CreateLoosePattern(artistName); 
+            var loosePattern = CreateLoosePattern(artistName);
 
             foreach (var location in musicLocations)
             {
-                var directories = Directory.GetDirectories(location);
+                var directories = Directory.GetDirectories(location, "*", SearchOption.AllDirectories); //Recursively search all directories
 
                 foreach (var dir in directories)
                 {
@@ -31,7 +31,7 @@ namespace FlacFinder
                     {
                         matchingFolders[folderName] = dir;
                     }
-                    // Loose match using regex (e.g., "Run the Jewels" matches "Run the Jewls - RTJ Quatro [1969] HyperXOXO")
+                    // Loose match using regex
                     else if (Regex.IsMatch(folderName, loosePattern, RegexOptions.IgnoreCase))
                     {
                         possibleMatches[folderName] = dir;
@@ -39,7 +39,18 @@ namespace FlacFinder
                 }
             }
 
-            if (matchingFolders.Count == 0 && possibleMatches.Count > 0)
+            HandleSearchResults(matchingFolders, possibleMatches);
+        }
+
+        private static void HandleSearchResults(Dictionary<string, string> matchingFolders, Dictionary<string, string> possibleMatches)
+        {
+            if (matchingFolders.Count > 0)
+            {
+                AnalyzeFolder(matchingFolders.Values.First()); // Prioritize exact match
+                return;
+            }
+
+            if (possibleMatches.Count > 0)
             {
                 Console.WriteLine("\nNo exact matches found, but these might be close:\n");
                 int index = 1;
@@ -72,10 +83,6 @@ namespace FlacFinder
                     AnalyzeFolder(folder);
                 }
             }
-            else if (matchingFolders.Count > 0)
-            {
-                AnalyzeFolder(matchingFolders.Values.First());
-            }
             else
             {
                 Console.WriteLine("\n\nNo matching artist folders found.");
@@ -105,12 +112,6 @@ namespace FlacFinder
             else if (flacFiles.Count == 0)
             {
                 Console.WriteLine($"{folderPath}'\n contains no FLAC files.\n");
-                //Console.WriteLine($"This is what was found.\n\n\n");
-                //foreach (var otherAudioFile in otherAudioFiles)
-                //{
-                //    Console.WriteLine($"{otherAudioFile}");
-                //}
-                //Console.WriteLine("\n\n");
             }
             else
             {
@@ -118,16 +119,9 @@ namespace FlacFinder
                 Console.WriteLine($"This is what was found.\n");
 
                 Console.WriteLine("Non FLAC:\n\n");
-
                 foreach (var otherAudioFile in otherAudioFiles)
                     Console.WriteLine(otherAudioFile);
-
-                //Console.WriteLine("FLAC:\n\n");
-                //foreach (var flacFile in flacFiles)
-                //    Console.WriteLine(flacFile);
             }
         }
     }
 }
-
-
