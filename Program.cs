@@ -60,6 +60,7 @@ try
                 Console.WriteLine("Invalid choice. Please enter a number between 1 and 7.\n");
                 break;
         }
+        Console.WriteLine("\n\n\n\n");
     }
 }
 catch (Exception e)

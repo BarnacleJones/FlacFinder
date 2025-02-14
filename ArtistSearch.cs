@@ -1,4 +1,6 @@
-﻿namespace FlacFinder
+﻿using System.Text.RegularExpressions;
+
+namespace FlacFinder
 {
     public static class ArtistSearch
     {
@@ -9,6 +11,11 @@
             var matchingFolders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             var possibleMatches = new Dictionary<string, string>();
 
+            // Normalize the artist name for comparison
+            string Normalize(string input) => Regex.Replace(input, @"[^a-zA-Z0-9]", "", RegexOptions.IgnoreCase);
+
+            var normalizedArtist = Normalize(artistName);
+
             foreach (var location in musicLocations)
             {
                 var directories = Directory.GetDirectories(location);
@@ -16,13 +23,14 @@
                 foreach (var dir in directories)
                 {
                     var folderName = Path.GetFileName(dir);
-                    if (folderName.Equals(artistName, StringComparison.OrdinalIgnoreCase))
+                    var normalizedFolderName = Normalize(folderName);
+
+                    if (string.Equals(normalizedFolderName, normalizedArtist, StringComparison.OrdinalIgnoreCase))
                     {
                         matchingFolders[folderName] = dir;
                     }
-                    else if (folderName.Replace(".", "").Equals(artistName.Replace(".", ""), StringComparison.OrdinalIgnoreCase)) 
+                    else if (Regex.IsMatch(normalizedFolderName, normalizedArtist, RegexOptions.IgnoreCase))
                     {
-                        //tsol vs t.s.o.l, this could be much more robust
                         possibleMatches[folderName] = dir;
                     }
                 }
