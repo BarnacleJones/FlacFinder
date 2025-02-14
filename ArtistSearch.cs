@@ -4,6 +4,9 @@ namespace FlacFinder
 {
     public static class ArtistSearch
     {
+        static string Normalize(string input) => Regex.Replace(input, @"[^a-zA-Z0-9]", "", RegexOptions.IgnoreCase);//Normalize a name by removing non-alphanumeric characters
+        static string CreateLoosePattern(string input) => Regex.Replace(input, @"\s+", ".*", RegexOptions.IgnoreCase); // Turns "Run the Jewels" into "Run.*the.*Jewels"
+
         public static void SearchArtist(string artistName)
         {
             var musicLocations = MusicFolderConfigurator.GetMusicLocations();
@@ -11,10 +14,8 @@ namespace FlacFinder
             var matchingFolders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             var possibleMatches = new Dictionary<string, string>();
 
-            // Normalize the artist name for comparison
-            string Normalize(string input) => Regex.Replace(input, @"[^a-zA-Z0-9]", "", RegexOptions.IgnoreCase);
-
             var normalizedArtist = Normalize(artistName);
+            var loosePattern = CreateLoosePattern(artistName); 
 
             foreach (var location in musicLocations)
             {
@@ -25,11 +26,13 @@ namespace FlacFinder
                     var folderName = Path.GetFileName(dir);
                     var normalizedFolderName = Normalize(folderName);
 
+                    // Exact (normalized) match
                     if (string.Equals(normalizedFolderName, normalizedArtist, StringComparison.OrdinalIgnoreCase))
                     {
                         matchingFolders[folderName] = dir;
                     }
-                    else if (Regex.IsMatch(normalizedFolderName, normalizedArtist, RegexOptions.IgnoreCase))
+                    // Loose match using regex (e.g., "Run the Jewels" matches "Run the Jewls - RTJ Quatro [1969] HyperXOXO")
+                    else if (Regex.IsMatch(folderName, loosePattern, RegexOptions.IgnoreCase))
                     {
                         possibleMatches[folderName] = dir;
                     }
@@ -38,7 +41,7 @@ namespace FlacFinder
 
             if (matchingFolders.Count == 0 && possibleMatches.Count > 0)
             {
-                Console.WriteLine("No exact matches found, but these might be close:");
+                Console.WriteLine("\nNo exact matches found, but these might be close:\n");
                 int index = 1;
                 foreach (var folder in possibleMatches)
                 {
@@ -46,7 +49,7 @@ namespace FlacFinder
                     index++;
                 }
 
-                Console.Write("Enter the number of your choice (or 'all' to check all): ");
+                Console.Write("\nEnter the number of your choice (or 'all' to check all):\n ");
                 var input = Console.ReadLine();
 
                 var selectedFolders = new List<string>();
@@ -60,7 +63,7 @@ namespace FlacFinder
                 }
                 else
                 {
-                    Console.WriteLine("Invalid selection.");
+                    Console.WriteLine("\n\nInvalid selection.");
                     return;
                 }
 
@@ -75,7 +78,7 @@ namespace FlacFinder
             }
             else
             {
-                Console.WriteLine("No matching artist folders found.");
+                Console.WriteLine("\n\nNo matching artist folders found.");
             }
         }
 
@@ -97,32 +100,31 @@ namespace FlacFinder
 
             if (flacFiles.Count > 0 && otherAudioFiles.Count == 0)
             {
-                Console.WriteLine($"Folder '{folderPath}' contains only FLAC files.");
+                Console.WriteLine($"\n\nFolder '{folderPath}' contains only FLAC files.\n\n");
             }
             else if (flacFiles.Count == 0)
             {
-                Console.WriteLine($"Folder '{folderPath}' contains no FLAC files.");
-                Console.WriteLine($"This is what was found.\n");
-
-                foreach (var otherAudioFile in otherAudioFiles)
-                {
-                    Console.WriteLine($"{folderPath}/{otherAudioFile}");
-                }
+                Console.WriteLine($"{folderPath}'\n contains no FLAC files.\n");
+                //Console.WriteLine($"This is what was found.\n\n\n");
+                //foreach (var otherAudioFile in otherAudioFiles)
+                //{
+                //    Console.WriteLine($"{otherAudioFile}");
+                //}
+                //Console.WriteLine("\n\n");
             }
             else
             {
-                Console.WriteLine($"Folder '{folderPath}' contains a mix of FLAC and other file types.");
+                Console.WriteLine($"\n\nFolder '{folderPath}' contains a mix of FLAC and other file types.\n");
                 Console.WriteLine($"This is what was found.\n");
 
-                foreach (var otherAudioFile in otherAudioFiles)
-                {
-                    Console.WriteLine($"Non flac: {folderPath}/{otherAudioFile}");
-                }
-                foreach (var flacFile in flacFiles)
-                {
-                    Console.WriteLine($"FLAC: {folderPath}/{flacFile}");
-                }
+                Console.WriteLine("Non FLAC:\n\n");
 
+                foreach (var otherAudioFile in otherAudioFiles)
+                    Console.WriteLine(otherAudioFile);
+
+                //Console.WriteLine("FLAC:\n\n");
+                //foreach (var flacFile in flacFiles)
+                //    Console.WriteLine(flacFile);
             }
         }
     }

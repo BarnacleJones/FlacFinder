@@ -2,7 +2,7 @@
 {
     public static class FileWriter
     {
-        public static void WriteToFile(string[] linesToWrite, string fileName)
+        public static void WriteToFile(IEnumerable<string> linesToWrite, string fileName)
         {
             using (StreamWriter outputFile = new StreamWriter(fileName))
             {
