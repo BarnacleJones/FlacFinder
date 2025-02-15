@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 
 namespace FlacFinder
 {
@@ -45,9 +42,9 @@ namespace FlacFinder
                 filePrintStream.Add("Duplicate Songs Found:\n");
                 foreach (var duplicate in duplicates)
                 {
-                    filePrintStream.Add($"- {duplicate.Key}");
+                    filePrintStream.Add($"- {duplicate.Key} ");
                     foreach (var fileToWrite in duplicate.Value)
-                        filePrintStream.Add($"  └ {fileToWrite}");
+                        filePrintStream.Add($"  └ {fileToWrite} ");
                 }
 
                 FileWriter.WriteToFile(filePrintStream, "duplicates.txt");
